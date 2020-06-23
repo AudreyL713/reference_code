@@ -535,8 +535,9 @@ class Scanner(object):
         for file in os.listdir("~/reference_code"):
             if file.endswith(".csv"):
                 print(os.path.join("", file))
+        return None
 
-    def scan(self, scan_prefix='', timeout=0, revisit=1):
+    def scan(self, scan_prefix='', timeout=0, revisit=1, curr_file_id=0):
         """Execute BLE beacon scan.
         
         Args:
@@ -562,7 +563,12 @@ class Scanner(object):
         # Update control file and scan output file
         with open(self.__control_file, 'w') as f:
             f.write("0")
-        nameScanLogs(self)
+
+        latestNum = self.curr_file_id
+        for file in os.listdir("~/reference_code"):
+            if file.endswith(".csv"):
+                print(os.path.join("", file))
+        
         scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
         self.__logger.info(f"Starting beacon scanner with timeout {timeout}.")
