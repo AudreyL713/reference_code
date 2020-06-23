@@ -9,6 +9,7 @@ uses iBeacon format (https://en.wikipedia.org/wiki/IBeacon).
 """
 
 import argparse
+import os
 from bluetooth.ble import BeaconService
 from datetime import datetime
 from itertools import zip_longest
@@ -35,7 +36,8 @@ DEFAULT_CONFIG = {
         },
     'scanner': {
         'control_file': "scanner_control",
-        'scan_prefix': "pi_pact_scan",
+        'scan_prefix': "scan",
+        'curr_file_id': 0,
         'timeout': None,
         'revisit': 1,
         'filters': {}
@@ -528,6 +530,12 @@ class Scanner(object):
         return  pd.DataFrame(advertisements,columns=['ADDRESS', 'TIMESTAMP', 
             'UUID', 'MAJOR', 'MINOR', 'TX POWER', 'RSSI'])
 
+    def nameScanLogs(self):
+        latestNum = self.curr_file_id
+        for file in os.listdir("~/reference_code"):
+            if file.endswith(".csv"):
+                print(os.path.join("", file))
+
     def scan(self, scan_prefix='', timeout=0, revisit=1):
         """Execute BLE beacon scan.
         
@@ -554,6 +562,7 @@ class Scanner(object):
         # Update control file and scan output file
         with open(self.__control_file, 'w') as f:
             f.write("0")
+        nameScanLogs(self)
         scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
         self.__logger.info(f"Starting beacon scanner with timeout {timeout}.")
