@@ -565,7 +565,7 @@ class Scanner(object):
             f.write("0")
 
         latestNum = self.curr_file_id
-        for file in os.listdir("~/reference_code"):
+        for file in os.listdir("../reference_code"):
             if file.endswith(".csv"):
                 print(os.path.join("", file))
         
