@@ -566,13 +566,13 @@ class Scanner(object):
             f.write("0")
 
         latestNum = self.curr_file_id
-        for file in os.listdir("../reference_code"):
+        for file in os.listdir("pact_scans"):
             if file.endswith(".csv"):
                 currNum = int(re.findall('\d+',str(os.path.join("", file)))[0])
                 if(currNum <= latestNum):
                     latestNum = currNum + 1;
         
-        scan_file = Path(f"scan_{latestNum}.csv")
+        scan_file = Path(f"pact_scans/{scan_prefix}_{latestNum}.csv")
 
         # scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
