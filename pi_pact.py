@@ -573,7 +573,9 @@ class Scanner(object):
                     latestNum = currNum
                     print("currNum")
         
-        scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
+        scan_file = Path(f"{scan_prefix}_{latestNum}.csv")
+
+        # scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
         self.__logger.info(f"Starting beacon scanner with timeout {timeout}.")
         self.__control_file_handle = self.__control_file.open(mode='r+')
