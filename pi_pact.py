@@ -572,7 +572,7 @@ class Scanner(object):
                 if(currNum <= latestNum):
                     latestNum = currNum + 1;
 
-        scan_file = Path(f"{scan_prefix}_{latestNum}.csv")
+        scan_file = Path(f"pact_scans/scan_{latestNum}.csv")
 
         # scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
