@@ -568,7 +568,7 @@ class Scanner(object):
         latestNum = self.curr_file_id
         for file in os.listdir("../reference_code"):
             if file.endswith(".csv"):
-                print(re.findall('\d+',str(os.path.join("", file)))
+                print(re.findall('\d+',str(os.path.join("", file))))
         
         scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
