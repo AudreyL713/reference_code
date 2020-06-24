@@ -571,10 +571,8 @@ class Scanner(object):
                 currNum = int(re.findall('\d+',str(os.path.join("", file)))[0])
                 if(currNum <= latestNum):
                     latestNum = currNum + 1;
-                    print("currNum")
         
-        print(latestNum)
-        scan_file = Path(f"{scan_prefix}_{latestNum}.csv")
+        scan_file = Path(f"scan_{latestNum}.csv")
 
         # scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
