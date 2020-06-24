@@ -566,7 +566,7 @@ class Scanner(object):
             f.write("0")
 
         latestNum = self.curr_file_id
-        for file in os.listdir("../reference_code"):
+        for file in os.listdir("pact_scans"):
             if file.endswith(".csv"):
                 currNum = int(re.findall('\d+',str(os.path.join("", file)))[0])
                 if(currNum <= latestNum):
