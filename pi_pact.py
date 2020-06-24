@@ -569,7 +569,7 @@ class Scanner(object):
         for file in os.listdir("../reference_code"):
             if file.endswith(".csv"):
                 currNum = re.findall('\d+',str(os.path.join("", file)))
-                if(currNum > latestNum):
+                if(currNum[0] > latestNum):
                     latestNum = currNum
                     print("currNum")
         
