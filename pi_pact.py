@@ -2,13 +2,15 @@
 # -*- mode: python; coding: utf-8 -*-
 """Bluetooth Low Energy (BLE) beacon advertisement and scanning.
 
-Execution of a BLE beacon for use in BWSI PiPact independent project. 
-Configuration of beacon done via external YAML. Underlying functionality 
-provided by PyBluez module (https://github.com/pybluez/pybluez). Beacon 
+Execution of a BLE beacon for use in BWSI PiPact independent project.
+Configuration of beacon done via external YAML. Underlying functionality
+provided by PyBluez module (https://github.com/pybluez/pybluez). Beacon
 uses iBeacon format (https://en.wikipedia.org/wiki/IBeacon).
 """
 
 import argparse
+import os
+import re
 from bluetooth.ble import BeaconService
 from datetime import datetime
 from itertools import zip_longest
@@ -35,7 +37,8 @@ DEFAULT_CONFIG = {
         },
     'scanner': {
         'control_file': "scanner_control",
-        'scan_prefix': "pi_pact_scan",
+        'scan_prefix': "scan",
+        'curr_file_id': 0,
         'timeout': None,
         'revisit': 1,
         'filters': {}
@@ -91,19 +94,19 @@ ALLOWABLE_FILTERS = ID_FILTERS+MEASUREMENT_FILTERS
 
 class Advertiser(object):
     """Instantiates a BLE beacon advertiser.
-    
+
     Attributes:
         control_file (pathlib.Path): BLE beacon advertiser control file path.
-        timeout (float, int): BLE beacon advertiser timeout (s). Must be 
+        timeout (float, int): BLE beacon advertiser timeout (s). Must be
             strictly positive and less than 600.
-        uuid (str): BLE beacon advertiser UUID. Must be 32 hexadecimal digits 
-            split into 5 groups separated by hyphens. The number of digits in 
+        uuid (str): BLE beacon advertiser UUID. Must be 32 hexadecimal digits
+            split into 5 groups separated by hyphens. The number of digits in
             each group from first to last) is {8, 4, 4, 4, 12}.
         major (int): BLE beacon advertiser major value. Must be in [1, 65535].
         minor (int): BLE beacon advertiser minor value. Must be in [1, 65535].
-        tx_power (int): BLE beacon advertiser TX power value. Must be in 
+        tx_power (int): BLE beacon advertiser TX power value. Must be in
             [-40, 4].
-        interval (int): BLE beacon advertiser interval (ms) value. Must be in 
+        interval (int): BLE beacon advertiser interval (ms) value. Must be in
             [20, 10000].
     """
 
@@ -112,7 +115,7 @@ class Advertiser(object):
 
         Args:
             logger (logging.Logger): Configured logger.
-            **kwargs: Keyword arguments corresponding to instance attributes. 
+            **kwargs: Keyword arguments corresponding to instance attributes.
                 Any unassociated keyword arguments are ignored.
         """
         # Logger
@@ -128,22 +131,22 @@ class Advertiser(object):
         # Create beacon
         self.__service = BeaconService(BLE_DEVICE)
         self.__logger.info("Initialized beacon advertiser.")
-        
+
     def __del__(self):
         """Instance destruction."""
         if self.__control_file_handle is not None:
             self.__control_file_handle.close()
         self.__control_file.unlink()
-        
+
     @property
     def control_file(self):
         """BLE beacon advertiser control file path getter."""
         return self.__control_file
-    
+
     @control_file.setter
     def control_file(self, value):
         """BLE beacon advertiser control file path setter.
-        
+
         Raises:
             TypeError: Beacon advertiser control file must be a string.
         """
@@ -156,21 +159,21 @@ class Advertiser(object):
             with self.__control_file.open(mode='w') as f:
                 f.write("0")
             self.__control_file_handle = None
-                
+
     @property
     def timeout(self):
         """BLE beacon advertiser timeout getter."""
         return self.__timeout;
-    
+
     @timeout.setter
     def timeout(self, value):
         """BLE beacon advertiser timeout setter.
 
         Raises:
-            TypeError: Beacon advertiser timeout must be a float, integer, or 
+            TypeError: Beacon advertiser timeout must be a float, integer, or
                 NoneType.
             ValueError: Beacon advertiser timeout must be strictly positive.
-            ValueError: Beacon advertisertimeout cannot exceed maximum 
+            ValueError: Beacon advertisertimeout cannot exceed maximum
                 allowable timeout.
         """
         if value is not None:
@@ -184,7 +187,7 @@ class Advertiser(object):
                 raise ValueError("Beacon advertiser timeout cannot exceed "
                         "maximum allowable timeout.")
         self.__timeout = value
-    
+
     @property
     def uuid(self):
         """BLE beacon advertiser UUID getter."""
@@ -224,7 +227,7 @@ class Advertiser(object):
             raise ValueError("Beacon advertiser major value must be in range "
                     f"{MAJOR_LIMITS}.")
         self.__major = value
-            
+
     @property
     def minor(self):
         """BLE beacon advertiser minor value getter."""
@@ -284,10 +287,10 @@ class Advertiser(object):
             raise ValueError("Beacon advertiser interval must be in range "
                     f"{INTERVAL_LIMITS}.")
         self.__interval = value
-            
+
     def advertise(self, timeout=0):
         """Execute BLE beacon advertisement.
-        
+
         Args:
             timeout (int, float): Time (s) for which to advertise beacon. If
                 specified as None then advertises till user commanded stop via
@@ -320,21 +323,21 @@ class Advertiser(object):
                 self.__logger.debug("Beacon advertiser control flag set to "
                         "stop.")
                 run = False
-        self.__logger.info("Stopping beacon advertiser.")        
+        self.__logger.info("Stopping beacon advertiser.")
         self.__service.stop_advertising()
         # Cleanup
         self.__control_file_handle.close()
         with self.__control_file.open('w') as f:
             f.write("0")
-            
+
 class Scanner(object):
     """Instantiates a BLE beacon scanner.
-    
+
     Attributes:
         control_file (pathlib.Path): BLE beacon scanner control file path.
         timeout (float, int): BLE beacon scanner timeout (s). Must be strictly
             positive and less than 600.
-        revisit (int): BLE beacon scanner revisit interval (s). Must be 
+        revisit (int): BLE beacon scanner revisit interval (s). Must be
             strictly positive.
         filters (dict): Filters to apply to received beacons. Available
             filters/keys are {'address', 'uuid', 'major', 'minor'}.
@@ -345,7 +348,7 @@ class Scanner(object):
 
         Args:
             logger (logging.Logger): Configured logger.
-            **kwargs: Keyword arguments corresponding to instance attributes. 
+            **kwargs: Keyword arguments corresponding to instance attributes.
                 Any unassociated keyword arguments are ignored.
         """
         # Logger
@@ -361,22 +364,22 @@ class Scanner(object):
         # Create beacon
         self.__service = BeaconService(BLE_DEVICE)
         self.__logger.info("Initialized beacon scanner.")
-        
+
     def __del__(self):
         """Instance destruction."""
         if self.__control_file_handle is not None:
             self.__control_file_handle.close()
         self.__control_file.unlink()
-        
+
     @property
     def control_file(self):
         """BLE beacon scanner control file path getter."""
         return self.__control_file
-    
+
     @control_file.setter
     def control_file(self, value):
         """BLE beacon scanner control file path setter.
-        
+
         Raises:
             TypeError: Beacon scanner control file must be a string.
         """
@@ -394,29 +397,29 @@ class Scanner(object):
     def scan_prefix(self):
         """BLE beacon scanner scan file prefix getter."""
         return self.__scan_prefix
-    
+
     @scan_prefix.setter
     def scan_prefix(self, value):
         """BLE beacon scanner scan file prefix setter.
-        
+
         Raises:
             TypeError: Beacon scanner scan file prefix must be a string.
         """
         if not isinstance(value, str):
             raise TypeError("Beacon scanner scan file prefix must be a string.")
         self.__scan_prefix = value
-   
+
     @property
     def timeout(self):
         """BLE beacon scanner timeout getter."""
         return self.__timeout;
-    
+
     @timeout.setter
     def timeout(self, value):
         """BLE beacon scanner timeout setter.
 
         Raises:
-            TypeError: Beacon scanner timeout must be a float, integer, or 
+            TypeError: Beacon scanner timeout must be a float, integer, or
                 NoneType.
             ValueError: Beacon scanner timeout must be strictly positive.
             ValueError: Beacon scanner cannot exceed maximum allowable timeout.
@@ -432,7 +435,7 @@ class Scanner(object):
                 raise ValueError("Beacon scanner timeout cannot exceed "
                         "maximum allowable timeout.")
         self.__timeout = value
-    
+
     @property
     def revisit(self):
         """BLE beacon scanner revisit interval getter."""
@@ -444,7 +447,7 @@ class Scanner(object):
 
         Raises:
             TypeError: Beacon scanner revisit interval must be an integer.
-            ValueError: Beacon scanner revisit interval must be strictly 
+            ValueError: Beacon scanner revisit interval must be strictly
                 positive.
          """
         if not isinstance(value, int):
@@ -454,12 +457,12 @@ class Scanner(object):
             raise ValueError("Beacon scanner revisit interval must strictly "
                     "positive.")
         self.__revisit = value
-    
+
     @property
     def filters(self):
         """BLE beacon scanner filters getter."""
         return self.__filters
-    
+
     @filters.setter
     def filters(self, value):
         """BLE beacon scanner filters setter.
@@ -474,15 +477,15 @@ class Scanner(object):
             raise KeyError("Beacon scanner filters must be one of allowable "
                     f"filters {ALLOWABLE_FILTERS}.")
         self.__filters = value
-    
+
     def filter_advertisements(self, advertisements):
         """Filter received beacon advertisements based on filters.
-        
+
         Args:
             advertisements (pandas.DataFrame): Parsed advertisements.
-            
+
         Returns:
-            Advertisements with all entries that were not compliant with the 
+            Advertisements with all entries that were not compliant with the
             filters removed.
         """
         for key, value in self.filters.items():
@@ -495,22 +498,22 @@ class Scanner(object):
                 advertisements = advertisements.query(query_str)
         advertisements.reset_index(inplace=True, drop=True)
         return advertisements
-    
+
     def process_scans(self, scans, timestamps):
         """Process collection of received beacon advertisement scans.
-        
-        Organize collection of received beacon advertisement scans according 
+
+        Organize collection of received beacon advertisement scans according
         to address, payload, and measurements.
 
         Args:
-            scans (list): Received beacon advertisement scans. Each element 
-                contains all advertisements received from one scan. Elements 
+            scans (list): Received beacon advertisement scans. Each element
+                contains all advertisements received from one scan. Elements
                 are in temporal order.
             timestamps (list): Timestamps associated with each scan.
-            
+
         Returns:
-            Advertisements organized in a pandas.DataFrame by address first, 
-            timestamp second, and then remainder of advertisement payload, 
+            Advertisements organized in a pandas.DataFrame by address first,
+            timestamp second, and then remainder of advertisement payload,
             e.g., UUID, major, minor, etc.
         """
         # Collect all advertisements
@@ -525,25 +528,32 @@ class Scanner(object):
                 advertisement['RSSI'] = payload[4]
                 advertisements.append(advertisement)
         # Format into DataFrame
-        return  pd.DataFrame(advertisements,columns=['ADDRESS', 'TIMESTAMP', 
+        return  pd.DataFrame(advertisements,columns=['ADDRESS', 'TIMESTAMP',
             'UUID', 'MAJOR', 'MINOR', 'TX POWER', 'RSSI'])
 
-    def scan(self, scan_prefix='', timeout=0, revisit=1):
+    def nameScanLogs(self):
+        latestNum = self.curr_file_id
+        for file in os.listdir("~/reference_code"):
+            if file.endswith(".csv"):
+                print(os.path.join("", file))
+        return None
+
+    def scan(self, scan_prefix='', timeout=0, revisit=1, curr_file_id=0):
         """Execute BLE beacon scan.
-        
+
         Args:
             scan_prefix (str): Scan output file prefix. Final output file name
                 will be appended with first scan start timestamp. Defaults to
                 configuration value.
-            timeout (int, float): Time (s) for which to advertise beacon. If 
-                specified as None then advertises till user commanded stop via 
+            timeout (int, float): Time (s) for which to advertise beacon. If
+                specified as None then advertises till user commanded stop via
                 control file. Defaults to configuration value.
-            revisit (int): Time interval (s) between consecutive scans. 
+            revisit (int): Time interval (s) between consecutive scans.
                 Defaults to 1.
-            
+
         Returns:
-            Filtered advertisements organized in a pandas.DataFrame by address 
-            first, timestamp second, and then remainder of advertisement 
+            Filtered advertisements organized in a pandas.DataFrame by address
+            first, timestamp second, and then remainder of advertisement
             payload, e.g., UUID, major, minor, etc.
         """
         # Parse inputs
@@ -554,11 +564,21 @@ class Scanner(object):
         # Update control file and scan output file
         with open(self.__control_file, 'w') as f:
             f.write("0")
-        scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
+
+        latestNum = self.curr_file_id
+        for file in os.listdir("pact_scans"):
+            if file.endswith(".csv"):
+                currNum = int(re.findall('\d+',str(os.path.join("", file)))[0])
+                if(currNum <= latestNum):
+                    latestNum = currNum + 1;
+
+        scan_file = Path(f"pact_scans/scan_{latestNum}.csv")
+
+        # scan_file = Path(f"{scan_prefix}_{datetime.now():%Y%m%dT%H%M%S}.csv")
         # Start advertising
         self.__logger.info(f"Starting beacon scanner with timeout {timeout}.")
         self.__control_file_handle = self.__control_file.open(mode='r+')
-        run = True        
+        run = True
         timestamps = []
         scans = []
         scan_count = 0
@@ -589,18 +609,18 @@ class Scanner(object):
         advertisements = self.filter_advertisements(advertisements)
         advertisements.to_csv(scan_file, index_label='SCAN')
         return advertisements
-    
+
 def setup_logger(config):
     """Setup and return logger based on configuration."""
     logging.config.dictConfig(config['config'])
     return logging.getLogger(config['name'])
-    
+
 def close_logger(logger):
     """Close logger."""
     for handler in logger.handlers[:]:
         handler.close()
         logger.removeHandler(handler)
-    
+
 def load_config(parsed_args):
     """Load configuration.
 
@@ -609,7 +629,7 @@ def load_config(parsed_args):
 
     Args:
         parsed_args (Namespace): Parsed input arguments.
-        
+
     Returns:
         Configuration dictionary.
     """
@@ -620,9 +640,9 @@ def load_config(parsed_args):
     else:
         with open(parsed_args['config_yml'], 'r') as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
-        config['advertiser'] = {**DEFAULT_CONFIG['advertiser'], 
+        config['advertiser'] = {**DEFAULT_CONFIG['advertiser'],
                 **config['advertiser']}
-        config['scanner'] = {**DEFAULT_CONFIG['scanner'], 
+        config['scanner'] = {**DEFAULT_CONFIG['scanner'],
                 **config['scanner']}
     # Merge configuration values with command line options
     for key, value in parsed_args.items():
@@ -642,13 +662,13 @@ def load_config(parsed_args):
         for filter_to_remove in filters_to_remove:
             del config['scanner']['filters'][filter_to_remove]
     return config
-    
+
 def parse_args(args):
     """Input argument parser.
 
     Args:
         args (list): Input arguments as taken from sys.argv.
-        
+
     Returns:
         Dictionary containing parsed input arguments. Keys are argument names.
     """
@@ -665,28 +685,28 @@ def parse_args(args):
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--control_file', help="Control file.")
     parser.add_argument('--scan_prefix', help="Scan output file prefix.")
-    parser.add_argument('--timeout', type=float, 
+    parser.add_argument('--timeout', type=float,
             help="Timeout (s) for both beacon advertiser and  scanner modes.")
     parser.add_argument('--uuid', help="Beacon advertiser UUID.")
-    parser.add_argument('--major', type=int, 
+    parser.add_argument('--major', type=int,
             help="Beacon advertiser major value.")
-    parser.add_argument('--minor', type=int, 
+    parser.add_argument('--minor', type=int,
             help="Beacon advertiser minor value.")
-    parser.add_argument('--tx_power', type=int, 
+    parser.add_argument('--tx_power', type=int,
             help="Beacon advertiser TX power.")
     parser.add_argument('--interval', help="Beacon advertiser interval (ms).")
-    parser.add_argument('--revist', type=int, 
+    parser.add_argument('--revist', type=int,
             help="Beacon scanner revisit interval (s)")
     return vars(parser.parse_args(args))
-    
+
 def main(args):
     """Creates beacon and either starts advertising or scanning.
-    
+
     Args:
         args (list): Arguments as provided by sys.argv.
 
     Returns:
-        If advertising then no output (None) is returned. If scanning 
+        If advertising then no output (None) is returned. If scanning
         then scanned advertisements are returned in pandas.DataFrame.
     """
     # Initial setup
@@ -695,7 +715,7 @@ def main(args):
     logger = setup_logger(config['logger'])
     logger.debug(f"Beacon configuration - {config['advertiser']}")
     logger.debug(f"Scanner configuration - {config['scanner']}")
-    
+
     # Create and start beacon advertiser or scanner
     try:
         if parsed_args['advertiser']:
@@ -713,8 +733,7 @@ def main(args):
     finally:
         close_logger(logger)
     return output
-    
+
 if __name__ == "__main__":
     """Script execution."""
     main(sys.argv[1:])
-    
