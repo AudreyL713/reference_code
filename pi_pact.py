@@ -9,8 +9,11 @@ uses iBeacon format (https://en.wikipedia.org/wiki/IBeacon).
 """
 
 import argparse
+# added imports
 import os
 import re
+import ray
+################
 from bluetooth.ble import BeaconService
 from datetime import datetime
 from itertools import zip_longest
@@ -288,6 +291,7 @@ class Advertiser(object):
                     f"{INTERVAL_LIMITS}.")
         self.__interval = value
 
+    @ray.remote
     def advertise(self, timeout=0):
         """Execute BLE beacon advertisement.
 
@@ -538,6 +542,7 @@ class Scanner(object):
                 print(os.path.join("", file))
         return None
 
+    @ray.remote
     def scan(self, scan_prefix='', timeout=0, revisit=1, curr_file_id=0):
         """Execute BLE beacon scan.
 
@@ -736,9 +741,9 @@ def main(args):
             logger.info("Beacon simultaneous advertiser and scanner mode selected.")
             scanner = Scanner(logger, **config['scanner'])
             advertiser = Advertiser(logger, **config['advertiser'])
-            advertiser.advertise()
-            advertisements = scanner.scan()
-            output = advertisements
+            advertiser_return = advertiser.advertise.remote()
+            scanner_return = scanner.scan.remote()
+            ad_return, output = ray.get([advertiser_return, scanner_return])
             
     except Exception:
         logger.exception("Fatal exception encountered")
