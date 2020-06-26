@@ -682,6 +682,8 @@ def parse_args(args):
                             help="Beacon advertiser mode.")
     mode_group.add_argument('-s', '--scanner', action='store_true',
                             help="Beacon scanner mode.")
+    mode_group.add_argument('-b', '--both', action='store_true',
+                            help="Beacon simultaneous scanner and advertiser mode.")
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--control_file', help="Control file.")
     parser.add_argument('--scan_prefix', help="Scan output file prefix.")
@@ -717,6 +719,7 @@ def main(args):
     logger.debug(f"Beacon configuration - {config['advertiser']}")
     logger.debug(f"Scanner configuration - {config['scanner']}")
 
+
     # Create and start beacon advertiser or scanner
     try:
         if parsed_args['advertiser']:
@@ -729,6 +732,14 @@ def main(args):
             scanner = Scanner(logger, **config['scanner'])
             advertisements = scanner.scan()
             output = advertisements
+        elif parsed_args['both']:
+            logger.info("Beacon simultaneous advertiser and scanner mode selected.")
+            scanner = Scanner(logger, **config['scanner'])
+            advertiser = Advertiser(logger, **config['advertiser'])
+            advertiser.advertise()
+            advertisements = scanner.scan()
+            output = advertisements
+            
     except Exception:
         logger.exception("Fatal exception encountered")
     finally:
