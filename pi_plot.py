@@ -54,12 +54,12 @@ class All_Graph(object):
         # make a list of the valid csv files
         # must be saved as #.csv in order you want them to be graphed
         valid_files = list()
-        for i in os.listdir(getattr(self, "file_location")):
+        for i in os.listdir(self.file_location):
             if (".csv" in i):
                 valid_files.append(int(re.findall('\d+',i)[0]))
         #loop through valid csv files
         for file in sorted(valid_files):
-            file_name = getattr(self, "file_location") + "/" + str(file) + ".csv"
+            file_name =  self.file_location + "/" + str(file) + ".csv"
 
             #read RSSI column from file
             file_data = pd.read_csv(file_name)
@@ -67,7 +67,7 @@ class All_Graph(object):
             
             #add list of RSSI values to dictionary and increment curr_dist
             scans_dict.update({curr_dist: scan_values})
-            curr_dist = curr_dist + getattr(self, "incr_dist")
+            curr_dist = curr_dist + self.incr_dist
         return scans_dict
 
     def plot_all(self):
