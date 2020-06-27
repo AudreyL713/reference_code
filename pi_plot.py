@@ -72,18 +72,18 @@ class All_Graph(object):
         # create dictionary of values to distances
         scans_dict = dict()
 
-        curr_dist = getattr("start_dist")
+        curr_dist = getattr(self, "start_dist")
         print("Here1")
         # make a list of the valid csv files
         # must be saved as #.csv in order you want them to be graphed
         valid_files = list()
-        for i in os.listdir(getattr("file_location")):
+        for i in os.listdir(getattr(self, "file_location")):
             if (".csv" in i):
                 valid_files.append(int(re.findall('\d+',i)[0]))
         print(valid_files)
         #loop through valid csv files
         for file in sorted(valid_files):
-            file_name = getattr("file_location") + "/" + str(file) + ".csv"
+            file_name = getattr(self, "file_location") + "/" + str(file) + ".csv"
 
             #read RSSI column from file
             file_data = pd.read_csv(file_name)
@@ -91,7 +91,7 @@ class All_Graph(object):
             
             #add list of RSSI values to dictionary and increment curr_dist
             scans_dict.update({curr_dist: scan_values})
-            curr_dist = curr_dist + getattr("incr_dist")
+            curr_dist = curr_dist + getattr(self, "incr_dist")
         print("scans initialized")
         return scans_dict
 
