@@ -12,7 +12,7 @@ import argparse
 # added imports
 import os
 import re
-from threading import Thread
+import threading
 ################
 from bluetooth.ble import BeaconService
 from datetime import datetime
@@ -740,11 +740,14 @@ def main(args):
             logger.info("Beacon simultaneous advertiser and scanner mode selected.")
             scanner = Scanner(logger, **config['scanner'])
             advertiser = Advertiser(logger, **config['advertiser'])
-            advertiser_run = Thread(target=advertiser.advertise)
-            scanner_run = Thread(target=scanner.scan)
+            advertiser_run = threading.Thread(target=advertiser.advertise)
+            scanner_run = threading.Thread(target=scanner.scan)
 
             advertiser_run.start()
             advertisements = scanner_run.start()
+
+            advertiser_run.join()
+            scanner_run.join()
 
             output = advertisements
             
