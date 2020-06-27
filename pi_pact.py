@@ -12,7 +12,7 @@ import argparse
 # added imports
 import os
 import re
-import ray
+from threading import Thread
 ################
 from bluetooth.ble import BeaconService
 from datetime import datetime
@@ -718,7 +718,6 @@ def main(args):
         then scanned advertisements are returned in pandas.DataFrame.
     """
     # Initial setup
-    ray.init()
     
     parsed_args = parse_args(args)
     config = load_config(parsed_args)
@@ -743,9 +742,13 @@ def main(args):
             logger.info("Beacon simultaneous advertiser and scanner mode selected.")
             scanner = Scanner(logger, **config['scanner'])
             advertiser = Advertiser(logger, **config['advertiser'])
-            advertiser_return = advertiser.advertise.remote()
-            scanner_return = scanner.scan.remote()
-            ad_return, output = ray.get([advertiser_return, scanner_return])
+            advertiser_run = Thread(target=advertiser.advertise)
+            scanner_run = Thread(target=scanner.scan)
+
+            advertiser_run.start()
+            advertisements = scanner_run.start()
+
+            output = advertisements
             
     except Exception:
         logger.exception("Fatal exception encountered")
