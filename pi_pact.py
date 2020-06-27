@@ -738,8 +738,10 @@ def main(args):
             output = advertisements
         elif parsed_args['both']:
             logger.info("Beacon simultaneous advertiser and scanner mode selected.")
-            scanner = Scanner(logger, **config['scanner'])
+            
             advertiser = Advertiser(logger, **config['advertiser'])
+            scanner = Scanner(logger, **config['scanner'])
+
             advertiser_run = threading.Thread(target=advertiser.advertise)
             scanner_run = threading.Thread(target=scanner.scan)
 
