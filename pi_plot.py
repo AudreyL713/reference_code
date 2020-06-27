@@ -38,6 +38,17 @@ class All_Graph(object):
         for key, value in DEFAULT_CONFIG['all_grapher'].items():
             if key in kwargs and kwargs[key]:
                 setattr(self, key, kwargs[key])
+                try:
+                    x = getattr(self, key)
+                    print(x)
+                except AttributeError:
+                    "GetAttr Failed"
+
+                try:
+                    y = self.key
+                    print(y)
+                except AttributeError:
+                    "Access Failed"
             else:
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
