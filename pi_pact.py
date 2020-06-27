@@ -718,6 +718,8 @@ def main(args):
         then scanned advertisements are returned in pandas.DataFrame.
     """
     # Initial setup
+    ray.init()
+    
     parsed_args = parse_args(args)
     config = load_config(parsed_args)
     logger = setup_logger(config['logger'])
