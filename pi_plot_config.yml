@@ -3,5 +3,5 @@ all_grapher:
   start_dist: 0.0
   incr_dist: 1.0
 
-indiv_grapher:
-  file_location: "pact_scans/graph_scans"
+indiv_plotter:
+  file_location: "pact_scans/graph_scans/scan_0.csv"

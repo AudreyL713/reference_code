@@ -21,8 +21,8 @@ DEFAULT_CONFIG = {
         'start_dist': 0.0,
         'incr_dist': 1.0
         },
-    'indiv_grapher': {
-        'control_file': "pact_scans/graph_scans"
+    'indiv_plotter': {
+        'control_file': "pact_scans/graph_scans/scan_0.csv"
         },
     }
 
@@ -93,6 +93,74 @@ class All_Graph(object):
 
         pass
 
+class Indiv_Graph(object):
+    def __init__(self, **kwargs):
+        """Instance initialization.
+
+        Args:
+        """
+        # Logger
+        # self.__logger = logger
+        # Grapher settings
+        for key, value in DEFAULT_CONFIG['indiv_plotter'].items():
+            if key in kwargs and kwargs[key]:
+                setattr(self, key, kwargs[key])
+            else:
+                # self.__logger.debug("Using default beacon advertiser "
+                #         f"configuration {key}: {value}.")
+                setattr(self, key, value)
+                print("Default attribute initialied")
+
+        # self.__logger.info("Initialized beacon advertiser.")
+        print("Initialized Plotter")
+
+    def parse_data(self):
+        # create dictionary of values to distances
+        scans_dict = dict()
+        curr_dist = self.start_dist
+        # make a list of the valid csv files
+        # must be saved as #.csv in order you want them to be graphed
+        valid_files = list()
+        for i in os.listdir(self.file_location):
+            if (".csv" in i):
+                valid_files.append(int(re.findall('\d+',i)[0]))
+        #loop through valid csv files
+        for file in sorted(valid_files):
+            file_name =  self.file_location + "/" + str(file) + ".csv"
+
+            #read RSSI column from file
+            file_data = pd.read_csv(file_name)
+            scan_values = file_data["RSSI"].tolist()
+            
+            #add list of RSSI values to dictionary and increment curr_dist
+            scans_dict.update({curr_dist: scan_values})
+            curr_dist = curr_dist + self.incr_dist
+        return scans_dict
+
+    def plot_all(self):
+        scans_dict = self.parse_data()
+        x_values = list(scans_dict.keys())
+        
+        fig, ax = plt.subplots()
+        for x in x_values:
+            ax.scatter([x] * len(scans_dict[x]), scans_dict[x], marker="o")
+
+        scans_mean = np.array([np.mean(y) for x,y in sorted(scans_dict.items())])
+        scans_std = np.array([np.std(y) for x,y in sorted(scans_dict.items())])
+        ax.errorbar(x_values, scans_mean, yerr=scans_std, label="mean accuracy")
+        
+        ax.set_title("RSSI Values vs. Distance Between Pi's")
+        ax.set_xlabel("Distance Between Pi's (inches)")
+        ax.set_ylabel('RSSI Values')
+        ax.grid(True)
+        ax.legend()
+        
+        plt.show()
+        print(scans_mean)
+
+        pass
+
+
 def setup_logger(config):
     """Setup and return logger based on configuration."""
     logging.config.dictConfig(config['config'])
@@ -125,15 +193,15 @@ def load_config(parsed_args):
             config = yaml.load(f, Loader=yaml.SafeLoader)
         config['all_grapher'] = {**DEFAULT_CONFIG['all_grapher'],
                 **config['all_grapher']}
-        config['indiv_grapher'] = {**DEFAULT_CONFIG['indiv_grapher'],
-                **config['indiv_grapher']}
+        config['indiv_plotter'] = {**DEFAULT_CONFIG['indiv_plotter'],
+                **config['indiv_plotter']}
     # Merge configuration values with command line options
     for key, value in parsed_args.items():
         if value is not None:
             if key in config['all_grapher']:
                 config['all_grapher'][key] = value
-            if key in config['indiv_grapher']:
-                config['indiv_grapher'][key] = value
+            if key in config['indiv_plotter']:
+                config['indiv_plotter'][key] = value
     return config
 
 def parse_args(args):
@@ -153,7 +221,7 @@ def parse_args(args):
     mode_group = parser.add_mutually_exclusive_group(required=True)
     mode_group.add_argument('-a', '--all_grapher', action='store_true',
                             help="Create line graph of data in files in specified folder")
-    mode_group.add_argument('-i', '--indiv_grapher', action='store_true',
+    mode_group.add_argument('-i', '--indiv_plotter', action='store_true',
                             help="Create scatter plot of data in specified file")       
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--file_location', help="Path to file")
@@ -186,7 +254,7 @@ def main(args):
             # logger.info("Beacon advertiser mode selected.")
             grapher = All_Graph(**config['all_grapher'])
             grapher.plot_all()
-        elif parsed_args['indiv_grapher']:
+        elif parsed_args['indiv_plotter']:
             print("This has not been implemented yet")
     except Exception:
         print(Exception)

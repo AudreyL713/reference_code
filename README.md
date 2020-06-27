@@ -234,7 +234,6 @@ In this mode, the grapher will take all of the CSV files in the specified folder
 1. Start the grapher. Specify the location of the CSV files with --file_location.
    ```console
    pi@raspberrypi:~ $ sudo python3 pi_plot.py -a --config_yml pi_plot_config.yml
-   [1] 2083
    ``` 
 2. Observe the informational log messages.
    ```console
