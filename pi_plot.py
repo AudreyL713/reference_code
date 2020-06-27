@@ -71,8 +71,9 @@ class All_Graph(object):
     def parse_data(self):
         # create dictionary of values to distances
         scans_dict = dict()
-
-        curr_dist = getattr(self, "start_dist")
+        print("Dict initialized")
+        print(getattr(self, 'start_dist'))
+        curr_dist = getattr(self, 'start_dist')
         print("Here1")
         # make a list of the valid csv files
         # must be saved as #.csv in order you want them to be graphed
@@ -96,7 +97,7 @@ class All_Graph(object):
         return scans_dict
 
     def plot_all(self):
-        scans_dict = parse_data(self)
+        scans_dict = self.parse_data()
         x_values = list(scans_dict.keys())
         
         fig, ax = plt.subplots()
