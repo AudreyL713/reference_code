@@ -108,7 +108,7 @@ def parse_data(file_location="pact_scans", start_dist=0.0, incr_dist=0.5):
     
     #loop through valid csv files
     for file in sorted(valid_files):
-        file_name = str(file) + ".csv"
+        file_name = file_location + "/" + str(file) + ".csv"
 
         #read RSSI column from file
         file_data = pd.read_csv(file_name)
@@ -120,7 +120,7 @@ def parse_data(file_location="pact_scans", start_dist=0.0, incr_dist=0.5):
     
     return scans_dict
 
-def plot_all(file_location="pact_scans", start_dist=0.0, incr_dist=0.5):
+def plot_all(file_location="pact_scans/graph_scans", start_dist=0.0, incr_dist=0.5):
     scans_dict = parse_data(file_location=file_location, start_dist=start_dist, incr_dist=incr_dist)
     x_values = list(scans_dict.keys())
     
