@@ -291,7 +291,6 @@ class Advertiser(object):
                     f"{INTERVAL_LIMITS}.")
         self.__interval = value
 
-    @ray.remote
     def advertise(self, timeout=0):
         """Execute BLE beacon advertisement.
 
@@ -542,7 +541,6 @@ class Scanner(object):
                 print(os.path.join("", file))
         return None
 
-    @ray.remote
     def scan(self, scan_prefix='', timeout=0, revisit=1, curr_file_id=0):
         """Execute BLE beacon scan.
 
