@@ -224,3 +224,25 @@ The only explicit output of this code are the published log messages (console an
 - MINOR: The minor value sent in beacon advertisement.
 - TX POWER: The Tx power value sent in beacon advertisement.
 - RSSI: The measured RSSI (dBm) of the received beacon advertisement.
+
+## Grapher
+The grapher can be started in one of two primary modes concerning how much data is plotted and what the resulting plot looks like. In both cases, the user can regain control through Ctrl+C or by exiting the image of the resulting graph. 
+
+### All_Grapher
+In this mode, the grapher will take all of the CSV files in the specified folder. It will plot the individual data points in each file and also create a line graph from the average RSSI value of one file to the average RSSI value of the next.
+
+1. Start the grapher. Specify the location of the CSV files with --file_location.
+   ```console
+   pi@raspberrypi:~ $ sudo python3 pi_plot.py -a --config_yml pi_plot_config.yml
+   [1] 2083
+   ``` 
+2. Observe the informational log messages.
+   ```console
+   Default attribute initialized
+   Initialized Grapher
+   ```
+3. Stop the advertiser by exiting out of the resulting graph. Observe the printed list, which describes the average value of each file.
+   ```console
+   [57.1    57.275    -48.072    -47.361]
+   ```
+
