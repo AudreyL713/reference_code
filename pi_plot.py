@@ -42,18 +42,29 @@ class All_Graph(object):
                     x = getattr(self, key)
                     print(x)
                 except AttributeError:
-                    "GetAttr Failed"
+                    print("GetAttr Failed")
 
                 try:
                     y = self.key
                     print(y)
                 except AttributeError:
-                    "Access Failed"
+                    print("Access Failed")
             else:
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
                 setattr(self, key, value)
                 print("Default attribute initialied")
+                try:
+                    x = getattr(self, key)
+                    print(x)
+                except AttributeError:
+                    print("GetAttr Failed")
+
+                try:
+                    y = self.key
+                    print(y)
+                except AttributeError:
+                    print("Access Failed")
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Grapher")
 
