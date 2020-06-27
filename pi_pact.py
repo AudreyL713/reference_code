@@ -9,8 +9,11 @@ uses iBeacon format (https://en.wikipedia.org/wiki/IBeacon).
 """
 
 import argparse
+# added imports
 import os
 import re
+import threading
+################
 from bluetooth.ble import BeaconService
 from datetime import datetime
 from itertools import zip_longest
@@ -682,6 +685,8 @@ def parse_args(args):
                             help="Beacon advertiser mode.")
     mode_group.add_argument('-s', '--scanner', action='store_true',
                             help="Beacon scanner mode.")
+    mode_group.add_argument('-b', '--both', action='store_true',
+                            help="Beacon simultaneous scanner and advertiser mode.")
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--control_file', help="Control file.")
     parser.add_argument('--scan_prefix', help="Scan output file prefix.")
@@ -711,11 +716,13 @@ def main(args):
         then scanned advertisements are returned in pandas.DataFrame.
     """
     # Initial setup
+    
     parsed_args = parse_args(args)
     config = load_config(parsed_args)
     logger = setup_logger(config['logger'])
     logger.debug(f"Beacon configuration - {config['advertiser']}")
     logger.debug(f"Scanner configuration - {config['scanner']}")
+
 
     # Create and start beacon advertiser or scanner
     try:
@@ -729,6 +736,23 @@ def main(args):
             scanner = Scanner(logger, **config['scanner'])
             advertisements = scanner.scan()
             output = advertisements
+        elif parsed_args['both']:
+            logger.info("Beacon simultaneous advertiser and scanner mode selected.")
+            
+            advertiser = Advertiser(logger, **config['advertiser'])
+            scanner = Scanner(logger, **config['scanner'])
+
+            advertiser_run = threading.Thread(target=advertiser.advertise)
+            scanner_run = threading.Thread(target=scanner.scan)
+
+            advertiser_run.start()
+            advertisements = scanner_run.start()
+
+            advertiser_run.join()
+            scanner_run.join()
+
+            output = advertisements
+            
     except Exception:
         logger.exception("Fatal exception encountered")
     finally:
