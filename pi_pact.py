@@ -574,7 +574,7 @@ class Scanner(object):
         for file in os.listdir("pact_scans"):
             if file.endswith(".csv"):
                 currNum = int(re.findall('\d+',str(os.path.join("", file)))[0])
-                if(currNum <= latestNum):
+                if(currNum >= latestNum):
                     latestNum = currNum + 1;
 
         scan_file = Path(f"pact_scans/scan_{latestNum}.csv")
@@ -703,7 +703,7 @@ def parse_args(args):
             help="Beacon advertiser TX power.")
     parser.add_argument('--interval', type=int,
             help="Beacon advertiser interval (ms).")
-    parser.add_argument('--revist', type=int, 
+    parser.add_argument('--revist', type=int,
             help="Beacon scanner revisit interval (s)")
     return vars(parser.parse_args(args))
 
