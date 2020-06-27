@@ -42,21 +42,23 @@ class All_Graph(object):
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
                 setattr(self, key, value)
+                print("Default attribute initialied")
         # self.__logger.info("Initialized beacon advertiser.")
+        print("Initialized Grapher")
 
     def parse_data(self):
         # create dictionary of values to distances
         scans_dict = dict()
 
         curr_dist = self.start_dist
-        
+        print("Here1")
         # make a list of the valid csv files
         # must be saved as #.csv in order you want them to be graphed
         valid_files = list()
         for i in os.listdir(self.file_location):
             if (".csv" in i):
                 valid_files.append(int(re.findall('\d+',i)[0]))
-        
+        print(valid_files)
         #loop through valid csv files
         for file in sorted(valid_files):
             file_name = self.file_location + "/" + str(file) + ".csv"
@@ -68,7 +70,7 @@ class All_Graph(object):
             #add list of RSSI values to dictionary and increment curr_dist
             scans_dict.update({curr_dist: scan_values})
             curr_dist = curr_dist + self.incr_dist
-        
+        print("scans initialized")
         return scans_dict
 
     def plot_all(self):
@@ -188,10 +190,9 @@ def main(args):
             grapher = All_Graph(**config['all_grapher'])
             grapher.plot_all()
         elif parsed_args['indiv_grapher']:
-            pass
-
-    # except Exception:
-    #     logger.exception("Fatal exception encountered")
+            print("This has not been implemented yet")
+    except Exception:
+        print(Exception)
     # finally:
     #     close_logger(logger)
 
