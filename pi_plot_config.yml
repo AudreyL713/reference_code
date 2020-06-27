@@ -1,5 +1,6 @@
 all_grapher:
   file_location: "pact_scans/graph_scans"
+  scan_prefix: "scan_",
   start_dist: 0.0
   incr_dist: 1.0
 
