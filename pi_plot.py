@@ -108,7 +108,6 @@ class Indiv_Plot(object):
         for key, value in DEFAULT_CONFIG['indiv_plotter'].items():
             if key in kwargs and kwargs[key]:
                 setattr(self, key, kwargs[key])
-                print(getattr(self, key))
             else:
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
@@ -120,7 +119,6 @@ class Indiv_Plot(object):
 
     def plot_indiv(self):
         file_data = pd.read_csv(getattr(self, "file_location"))
-        print("Here")
         scan_values = file_data["RSSI"].tolist()
 
         fig1, ax = plt.subplots()
@@ -179,8 +177,6 @@ def load_config(parsed_args):
     # Merge configuration values with command line options
     for key, value in parsed_args.items():
         if value is not None:
-            print(key)
-            print(value)
             if key in config['all_grapher']:
                 config['all_grapher'][key] = value
             if key in config['indiv_plotter']:
@@ -242,7 +238,7 @@ def main(args):
             plotter = Indiv_Plot(**config['indiv_plotter'])
             plotter.plot_indiv()
     except Exception:
-        print(Exception)
+        print("Something has gone wrong...oops")
     # finally:
     #     close_logger(logger)
 
