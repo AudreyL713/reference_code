@@ -112,26 +112,26 @@ class All_Graph(object):
         ax.set_xlabel("Distance Between Pi's (inches)")
         ax.set_ylabel('RSSI Values')
         ax.grid(True)
-        ax.legend()
 
         x = np.array(x_values)
         if self.best_fit==1:
-            m, b = np.polyfit(x_values, scans_mean, 1)
-            print(m*x + b)
-            plt.plot(x, m*x+b, '-r')
+            m, b = np.polyfit(x, scans_mean, 1)
+            equation = 'y = ' + str(round(m,4)) + 'x' ' + ' + str(round(b,4))
+            ax.plot(x, m*x+b, '-r', label=equation)
         elif self.best_fit==2:
-            x1, m, b = np.polyfit(x_values, scans_mean, 2)
-            plt.plot(x, x1*x**2 + m*x + b)
+            x1, m, b = np.polyfit(x, scans_mean, 2)
+            plt.plot(x, x1*x**2 + m*x + b, '-r')
         elif self.best_fit==3:
-            x2, x1, m, b = np.polyfit(x_values, scans_mean, 3)
-            plt.plot(x, x2*x**3 + x1*x**2 + m*x + b)
+            x2, x1, m, b = np.polyfit(x, scans_mean, 3)
+            plt.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==4:
-            x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 4)
-            plt.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b)
+            x3, x2, x1, m, b = np.polyfit(x, scans_mean, 4)
+            plt.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==5:
-            x4, x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 5)
-            plt.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b)
+            x4, x3, x2, x1, m, b = np.polyfit(x, scans_mean, 5)
+            plt.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r')
 
+        ax.legend()
         plt.show()
         print(scans_mean)
 
