@@ -113,23 +113,24 @@ class All_Graph(object):
         ax.set_ylabel('RSSI Values')
         ax.grid(True)
 
-        x = np.array(x_values)
         if self.best_fit==1:
-            m, b = np.polyfit(x, scans_mean, 1)
+            x = np.array(x_values)
+            m, b = np.polyfit(x_values, scans_mean, 1)
             equation = f"y = {round(m,4)}x + {round(b,4)}"
             ax.plot(x, m*x+b, '-r', label=equation)
         elif self.best_fit==2:
-            x1, m, b = np.polyfit(x, scans_mean, 2)
+            x = np.linspace(-2,2,100)
+            x1, m, b = np.polyfit(x_values, scans_mean, 2)
             equation = f"y = {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
             ax.plot(x, x1*x**2 + m*x + b, '-r', label=equation)
         elif self.best_fit==3:
-            x2, x1, m, b = np.polyfit(x, scans_mean, 3)
+            x2, x1, m, b = np.polyfit(x_values, scans_mean, 3)
             ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==4:
-            x3, x2, x1, m, b = np.polyfit(x, scans_mean, 4)
+            x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 4)
             ax.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==5:
-            x4, x3, x2, x1, m, b = np.polyfit(x, scans_mean, 5)
+            x4, x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 5)
             ax.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r')
 
         ax.legend()
