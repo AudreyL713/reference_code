@@ -25,7 +25,7 @@ DEFAULT_CONFIG = {
         'incr_dist': 1.0
         },
     'indiv_plotter': {
-        'control_file': "pact_scans/graph_scans/scan_0.csv"
+        'file_location': "pact_scans/graph_scans/scan_0.csv"
         },
     }
 
@@ -108,6 +108,7 @@ class Indiv_Plot(object):
         for key, value in DEFAULT_CONFIG['indiv_plotter'].items():
             if key in kwargs and kwargs[key]:
                 setattr(self, key, kwargs[key])
+                print(getattr(self, key))
             else:
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
@@ -117,8 +118,9 @@ class Indiv_Plot(object):
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Plotter")
 
-    def plot_all(self):
-        file_data = pd.read_csv(self.file_location)
+    def plot_indiv(self):
+        file_data = pd.read_csv(getattr(self, "file_location"))
+        print("Here")
         scan_values = file_data["RSSI"].tolist()
 
         fig1, ax = plt.subplots()
@@ -177,6 +179,8 @@ def load_config(parsed_args):
     # Merge configuration values with command line options
     for key, value in parsed_args.items():
         if value is not None:
+            print(key)
+            print(value)
             if key in config['all_grapher']:
                 config['all_grapher'][key] = value
             if key in config['indiv_plotter']:
@@ -236,7 +240,7 @@ def main(args):
             grapher.plot_all()
         elif parsed_args['indiv_plotter']:
             plotter = Indiv_Plot(**config['indiv_plotter'])
-            plotter.plot_all()
+            plotter.plot_indiv()
     except Exception:
         print(Exception)
     # finally:
