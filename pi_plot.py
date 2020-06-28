@@ -126,15 +126,18 @@ class All_Graph(object):
         elif self.best_fit==3:
             x = np.linspace(x_values[0],x_values[-1],100)
             x2, x1, m, b = np.polyfit(x_values, scans_mean, 3)
-            ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
+            equation = f"y = {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
         elif self.best_fit==4:
             x = np.linspace(x_values[0],x_values[-1],100)
             x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 4)
-            ax.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r')
+            equation = f"y = {round(x3,4)}$x^4$ + {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
         elif self.best_fit==5:
             x = np.linspace(x_values[0],x_values[-1],100)
             x4, x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 5)
-            ax.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r')
+            equation = f"y = {round(x4,4)}$x^5$ + {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
 
         ax.legend()
         plt.show()
