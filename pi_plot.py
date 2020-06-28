@@ -121,7 +121,7 @@ class All_Graph(object):
         elif self.best_fit==2:
             x1, m, b = np.polyfit(x, scans_mean, 2)
             equation = f"y = {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
-            ax.plot(x, x1*x**2 + m*x + b, '-r')
+            ax.plot(x, x1*x**2 + m*x + b, '-r', label=equation)
         elif self.best_fit==3:
             x2, x1, m, b = np.polyfit(x, scans_mean, 3)
             ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
