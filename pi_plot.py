@@ -20,6 +20,7 @@ import yaml
 DEFAULT_CONFIG = {
     'all_grapher': {
         'file_location': "pact_scans/graph_scans",
+        'scan_prefix': "scan_",
         'start_dist': 0.0,
         'incr_dist': 1.0
         },
@@ -61,7 +62,7 @@ class All_Graph(object):
                 valid_files.append(int(re.findall('\d+',i)[0]))
         #loop through valid csv files
         for file in sorted(valid_files):
-            file_name =  self.file_location + "/" + str(file) + ".csv"
+            file_name =  self.file_location + "/" + self.scan_prefix + str(file) + ".csv"
 
             #read RSSI column from file
             file_data = pd.read_csv(file_name)
@@ -203,6 +204,7 @@ def parse_args(args):
                             help="Create scatter plot of data in specified file")       
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--file_location', help="Path to file")
+    parser.add_argument('--scan_prefix', help="Prefix to numbered file (file should be scan_prefix#.csv)")
     parser.add_argument('--start_dist', type=float,
             help="Distance between pi's for first reading")
     parser.add_argument('--incr_dist', type=float,
