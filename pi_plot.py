@@ -114,8 +114,22 @@ class All_Graph(object):
         ax.grid(True)
         ax.legend()
 
-        print(self.best_fit)
-        
+        if self.best_fit==1:
+            m, b = np.polyfit(x_values, scans_mean, 1)
+            plt.plot(x, m*x + b)
+        elif self.best_fit==2:
+            x1, m, b = np.polyfit(x_values, scans_mean, 2)
+            plt.plot(x, x1*x**2 + m*x + b)
+        elif self.best_fit==3:
+            x2, x1, m, b = np.polyfit(x_values, scans_mean, 3)
+            plt.plot(x, x2*x**3 + x1*x**2 + m*x + b)
+        elif self.best_fit==4:
+            x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 4)
+            plt.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b)
+        elif self.best_fit==5:
+            x4, x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 5)
+            plt.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b)
+
         plt.show()
         print(scans_mean)
 
