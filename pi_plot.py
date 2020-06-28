@@ -114,9 +114,11 @@ class All_Graph(object):
         ax.grid(True)
         ax.legend()
 
+        x = np.array(x_values)
         if self.best_fit==1:
             m, b = np.polyfit(x_values, scans_mean, 1)
-            plt.plot(x, m*x + b)
+            print(m*x + b)
+            plt.plot(x, m*x+b, '-r')
         elif self.best_fit==2:
             x1, m, b = np.polyfit(x_values, scans_mean, 2)
             plt.plot(x, x1*x**2 + m*x + b)
