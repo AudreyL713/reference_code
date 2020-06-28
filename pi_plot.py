@@ -21,6 +21,7 @@ DEFAULT_CONFIG = {
     'all_grapher': {
         'file_location': "pact_scans/graph_scans",
         'scan_prefix': "scan_",
+        'best_fit': 1,
         'start_dist': 0.0,
         'incr_dist': 1.0
         },
@@ -28,6 +29,8 @@ DEFAULT_CONFIG = {
         'file_location': "pact_scans/graph_scans/scan_0.csv"
         },
     }
+
+BEST_FIT_LIMITS = [0, 5]
 
 class All_Graph(object):
     def __init__(self, **kwargs):
@@ -49,6 +52,26 @@ class All_Graph(object):
 
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Grapher")
+
+    @property
+    def best_fit(self):
+        """BLE beacon advertiser TX power value getter."""
+        return self.__best_fit
+
+    @best_fit.setter
+    def best_fit(self, value):
+        """BLE beacon Beacon advertiser TX power setter.
+
+        Raises:
+            TypeError: Beacon advertiser TX power must be an integer.
+            ValueError: Beacon advertiser TX power must be in [-40, 4].
+         """
+        if not isinstance(value, int):
+            raise TypeError("Degree of Best Fit Line must be an integer.")
+        elif value < BEST_FIT_LIMITS[0] or value > BEST_FIT_LIMITS[1]:
+            raise ValueError("Degree of Best Fit Line must be in range "
+                    f"{BEST_FIT_LIMITS}.")
+        self.__best_fit = value
 
     def parse_data(self):
         # create dictionary of values to distances
@@ -90,6 +113,8 @@ class All_Graph(object):
         ax.set_ylabel('RSSI Values')
         ax.grid(True)
         ax.legend()
+
+        print(self.best_fit)
         
         plt.show()
         print(scans_mean)
