@@ -21,6 +21,7 @@ DEFAULT_CONFIG = {
     'all_grapher': {
         'file_location': "pact_scans/graph_scans",
         'scan_prefix': "scan_",
+        'best_fit': 1,
         'start_dist': 0.0,
         'incr_dist': 1.0
         },
@@ -28,6 +29,8 @@ DEFAULT_CONFIG = {
         'file_location': "pact_scans/graph_scans/scan_0.csv"
         },
     }
+
+BEST_FIT_LIMITS = [-1, 5]
 
 class All_Graph(object):
     def __init__(self, **kwargs):
@@ -49,6 +52,26 @@ class All_Graph(object):
 
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Grapher")
+
+    @property
+    def best_fit(self):
+        """BLE beacon advertiser TX power value getter."""
+        return self.__best_fit
+
+    @best_fit.setter
+    def best_fit(self, value):
+        """BLE beacon Beacon advertiser TX power setter.
+
+        Raises:
+            TypeError: Beacon advertiser TX power must be an integer.
+            ValueError: Beacon advertiser TX power must be in [-40, 4].
+         """
+        if not isinstance(value, int):
+            raise TypeError("Degree of Best Fit Line must be an integer.")
+        elif value < BEST_FIT_LIMITS[0] or value > BEST_FIT_LIMITS[1]:
+            raise ValueError("Degree of Best Fit Line must be in range "
+                    f"{BEST_FIT_LIMITS}.")
+        self.__best_fit = value
 
     def parse_data(self):
         # create dictionary of values to distances
@@ -89,8 +112,34 @@ class All_Graph(object):
         ax.set_xlabel("Distance Between Pi's (inches)")
         ax.set_ylabel('RSSI Values')
         ax.grid(True)
+
+        if self.best_fit==1:
+            x = np.array(x_values)
+            m, b = np.polyfit(x_values, scans_mean, 1)
+            equation = f"y = {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, m*x+b, '-r', label=equation)
+        elif self.best_fit==2:
+            x = np.linspace(x_values[0],x_values[-1],100)
+            x1, m, b = np.polyfit(x_values, scans_mean, 2)
+            equation = f"y = {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x1*x**2 + m*x + b, '-r', label=equation)
+        elif self.best_fit==3:
+            x = np.linspace(x_values[0],x_values[-1],100)
+            x2, x1, m, b = np.polyfit(x_values, scans_mean, 3)
+            equation = f"y = {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
+        elif self.best_fit==4:
+            x = np.linspace(x_values[0],x_values[-1],100)
+            x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 4)
+            equation = f"y = {round(x3,4)}$x^4$ + {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
+        elif self.best_fit==5:
+            x = np.linspace(x_values[0],x_values[-1],100)
+            x4, x3, x2, x1, m, b = np.polyfit(x_values, scans_mean, 5)
+            equation = f"y = {round(x4,4)}$x^5$ + {round(x2,4)}$x^3$ + {round(x1,4)}$x^2$ + {round(m,4)}x + {round(b,4)}"
+            ax.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r', label=equation)
+
         ax.legend()
-        
         plt.show()
         print(scans_mean)
 
@@ -205,6 +254,8 @@ def parse_args(args):
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--file_location', help="Path to file")
     parser.add_argument('--scan_prefix', help="Prefix to numbered file (file should be scan_prefix#.csv)")
+    parser.add_argument('--best_fit', type=int,
+            help="Degree of line of best fit, -1 means no line")
     parser.add_argument('--start_dist', type=float,
             help="Distance between pi's for first reading")
     parser.add_argument('--incr_dist', type=float,
