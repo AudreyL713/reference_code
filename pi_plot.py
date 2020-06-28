@@ -2,6 +2,7 @@
 # -*- mode: python; coding: utf-8 -*-
 
 #plotting imports
+from collections import Counter
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -9,6 +10,7 @@ import os
 import re
 import logging
 import logging.config
+import statistics
 #################
 
 import argparse
@@ -42,7 +44,7 @@ class All_Graph(object):
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
                 setattr(self, key, value)
-                print("Default attribute initialied")
+                print("Default attribute initialized")
 
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Grapher")
@@ -93,7 +95,7 @@ class All_Graph(object):
 
         pass
 
-class Indiv_Graph(object):
+class Indiv_Plot(object):
     def __init__(self, **kwargs):
         """Instance initialization.
 
@@ -101,7 +103,7 @@ class Indiv_Graph(object):
         """
         # Logger
         # self.__logger = logger
-        # Grapher settings
+        # Plotter settings
         for key, value in DEFAULT_CONFIG['indiv_plotter'].items():
             if key in kwargs and kwargs[key]:
                 setattr(self, key, kwargs[key])
@@ -109,57 +111,33 @@ class Indiv_Graph(object):
                 # self.__logger.debug("Using default beacon advertiser "
                 #         f"configuration {key}: {value}.")
                 setattr(self, key, value)
-                print("Default attribute initialied")
+                print("Default attribute initialized")
 
         # self.__logger.info("Initialized beacon advertiser.")
         print("Initialized Plotter")
 
-    def parse_data(self):
-        # create dictionary of values to distances
-        scans_dict = dict()
-        curr_dist = self.start_dist
-        # make a list of the valid csv files
-        # must be saved as #.csv in order you want them to be graphed
-        valid_files = list()
-        for i in os.listdir(self.file_location):
-            if (".csv" in i):
-                valid_files.append(int(re.findall('\d+',i)[0]))
-        #loop through valid csv files
-        for file in sorted(valid_files):
-            file_name =  self.file_location + "/" + str(file) + ".csv"
-
-            #read RSSI column from file
-            file_data = pd.read_csv(file_name)
-            scan_values = file_data["RSSI"].tolist()
-            
-            #add list of RSSI values to dictionary and increment curr_dist
-            scans_dict.update({curr_dist: scan_values})
-            curr_dist = curr_dist + self.incr_dist
-        return scans_dict
-
     def plot_all(self):
-        scans_dict = self.parse_data()
-        x_values = list(scans_dict.keys())
-        
-        fig, ax = plt.subplots()
-        for x in x_values:
-            ax.scatter([x] * len(scans_dict[x]), scans_dict[x], marker="o")
+        file_data = pd.read_csv(self.file_location)
+        scan_values = file_data["RSSI"].tolist()
 
-        scans_mean = np.array([np.mean(y) for x,y in sorted(scans_dict.items())])
-        scans_std = np.array([np.std(y) for x,y in sorted(scans_dict.items())])
-        ax.errorbar(x_values, scans_mean, yerr=scans_std, label="mean accuracy")
-        
-        ax.set_title("RSSI Values vs. Distance Between Pi's")
-        ax.set_xlabel("Distance Between Pi's (inches)")
-        ax.set_ylabel('RSSI Values')
-        ax.grid(True)
-        ax.legend()
-        
+        fig1, ax = plt.subplots()
+        ax.boxplot(scan_values, vert=False, meanline=True, showmeans=True, meanprops={'linewidth':2.5, 'color':'red'}, medianprops={'linestyle':'None'})
+
+        ax.set_title("Box and Whiskers Plot of RSSI Values")
+        ax.set_xlabel('RSSI Values')        
+            
+        y = [1] * len(scan_values)
+        counts = Counter(zip(scan_values,y))
+        s = [200*counts[(xx,yy)] for xx,yy in zip(scan_values,y)]
+            
+        plt.scatter(scan_values, y, s=s, alpha=0.2)
+        plt.yticks([])
+
         plt.show()
-        print(scans_mean)
+
+        print("Average Value: " + str(statistics.mean(scan_values)))
 
         pass
-
 
 def setup_logger(config):
     """Setup and return logger based on configuration."""
@@ -255,7 +233,8 @@ def main(args):
             grapher = All_Graph(**config['all_grapher'])
             grapher.plot_all()
         elif parsed_args['indiv_plotter']:
-            print("This has not been implemented yet")
+            plotter = Indiv_Plot(**config['indiv_plotter'])
+            plotter.plot_all()
     except Exception:
         print(Exception)
     # finally:
