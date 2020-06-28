@@ -116,20 +116,21 @@ class All_Graph(object):
         x = np.array(x_values)
         if self.best_fit==1:
             m, b = np.polyfit(x, scans_mean, 1)
-            equation = 'y = ' + str(round(m,4)) + 'x' ' + ' + str(round(b,4))
+            # equation = 'y = ' + str(round(m,4)) + 'x' ' + ' + str(round(b,4))
+            equation = f"y= {round(m,4)}x + {round(b,4)}"
             ax.plot(x, m*x+b, '-r', label=equation)
         elif self.best_fit==2:
             x1, m, b = np.polyfit(x, scans_mean, 2)
-            plt.plot(x, x1*x**2 + m*x + b, '-r')
+            ax.plot(x, x1*x**2 + m*x + b, '-r')
         elif self.best_fit==3:
             x2, x1, m, b = np.polyfit(x, scans_mean, 3)
-            plt.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
+            ax.plot(x, x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==4:
             x3, x2, x1, m, b = np.polyfit(x, scans_mean, 4)
-            plt.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r')
+            ax.plot(x, x3*x**4 + x2*x**3 + x1*x**2 + m*x + b, '-r')
         elif self.best_fit==5:
             x4, x3, x2, x1, m, b = np.polyfit(x, scans_mean, 5)
-            plt.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r')
+            ax.plot(x, x4*x**5 + x2*x**3 + x1*x**2 + m*x + b, '-r')
 
         ax.legend()
         plt.show()
@@ -246,6 +247,8 @@ def parse_args(args):
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--file_location', help="Path to file")
     parser.add_argument('--scan_prefix', help="Prefix to numbered file (file should be scan_prefix#.csv)")
+    parser.add_argument('--best_fit', type=int,
+            help="Degree of line of best fit, 0 means no line")
     parser.add_argument('--start_dist', type=float,
             help="Distance between pi's for first reading")
     parser.add_argument('--incr_dist', type=float,
