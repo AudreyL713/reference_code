@@ -30,7 +30,7 @@ DEFAULT_CONFIG = {
         },
     }
 
-BEST_FIT_LIMITS = [0, 5]
+BEST_FIT_LIMITS = [-1, 5]
 
 class All_Graph(object):
     def __init__(self, **kwargs):
@@ -255,7 +255,7 @@ def parse_args(args):
     parser.add_argument('--file_location', help="Path to file")
     parser.add_argument('--scan_prefix', help="Prefix to numbered file (file should be scan_prefix#.csv)")
     parser.add_argument('--best_fit', type=int,
-            help="Degree of line of best fit, 0 means no line")
+            help="Degree of line of best fit, -1 means no line")
     parser.add_argument('--start_dist', type=float,
             help="Distance between pi's for first reading")
     parser.add_argument('--incr_dist', type=float,
