@@ -1,6 +1,9 @@
 all_grapher:
   file_location: "pact_scans/graph_scans"
   scan_prefix: "scan_"
+  graph_title: "RSSI Values vs. Distance Between Pi's"
+  y_label: "RSSI Values"
+  x_label: "Distance Between Pi's (inches)"
   best_fit: 1
   start_dist: 0.0
   incr_dist: 1.0

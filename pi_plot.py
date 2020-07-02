@@ -21,6 +21,9 @@ DEFAULT_CONFIG = {
     'all_grapher': {
         'file_location': "pact_scans/graph_scans",
         'scan_prefix': "scan_",
+        'graph_title': "RSSI Values vs. Distance Between Pi's",
+        'y_label': "RSSI Values",
+        'x_label': "Distance Between Pi's (inches)",
         'best_fit': 1,
         'start_dist': 0.0,
         'incr_dist': 1.0
@@ -108,9 +111,9 @@ class All_Graph(object):
         scans_std = np.array([np.std(y) for x,y in sorted(scans_dict.items())])
         ax.errorbar(x_values, scans_mean, yerr=scans_std, label="mean accuracy")
         
-        ax.set_title("RSSI Values vs. Distance Between Pi's")
-        ax.set_xlabel("Distance Between Pi's (inches)")
-        ax.set_ylabel('RSSI Values')
+        ax.set_title(self.graph_title)
+        ax.set_xlabel(self.x_label)
+        ax.set_ylabel(self.y_label)
         ax.grid(True)
 
         if self.best_fit==1:
@@ -254,6 +257,9 @@ def parse_args(args):
     parser.add_argument('--config_yml', help="Configuration YAML.")
     parser.add_argument('--file_location', help="Path to file")
     parser.add_argument('--scan_prefix', help="Prefix to numbered file (file should be scan_prefix#.csv)")
+    parser.add_argument('--graph_title', help="Title of resulting graph")
+    parser.add_argument('--x_label', help="Label for y axis")
+    parser.add_argument('--y_label', help="Label for x axis")
     parser.add_argument('--best_fit', type=int,
             help="Degree of line of best fit, -1 means no line")
     parser.add_argument('--start_dist', type=float,
